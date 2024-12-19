@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Org Chart</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .node circle {
+            fill: #69b3a2;
+        }
+        .node text {
+            font-size: 12px;
+        }
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Org Chart</h1>
+    <div id="orgChart"></div>
+
+    <script>
+        const data = {
+            name: "CEO",
+            children: [
+                {
+                    name: "VP of Sales",
+                    children: [
+                        { name: "Sales Manager 1" },
+                        { name: "Sales Manager 2" }
+                    ]
+                },
+                {
+                    name: "VP of Engineering",
+                    children: [
+                        { name: "Dev Lead 1" },
+                        { name: "Dev Lead 2" }
+                    ]
+                }
+            ]
+        };
+
+        const width = 800;
+        const height = 400;
+
+        const tree = d3.tree().size([height, width - 160]);
+        const root = d3.hierarchy(data);
+        tree(root);
+
+        const svg = d3.select("#orgChart")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const g = svg.append("g")
+            .attr("transform", "translate(80,0)");
+
+        const link = g.selectAll(".link")
+            .data(root.links())
+            .enter()
+            .append("path")
+            .attr("class", "link")
+            .attr("d", d3.linkHorizontal()
+                .x(d => d.y)
+                .y(d => d.x));
+
+        const node = g.selectAll(".node")
+            .data(root.descendants())
+            .enter()
+            .append("g")
+            .attr("class", "node")
+            .attr("transform", d => `translate(${d.y},${d.x})`);
+
+        node.append("circle")
+            .attr("r", 5);
+
+        node.append("text")
+            .attr("dy", 3)
+            .attr("x", d => d.children ? -8 : 8)
+            .style("text-anchor", d => d.children ? "end" : "start")
+            .text(d => d.data.name);
+    </script>
+</body>
+</html>
